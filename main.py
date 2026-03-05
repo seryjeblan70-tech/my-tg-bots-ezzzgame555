@@ -212,6 +212,15 @@ async def api_update_user(user_id: int, data: dict):
 async def health():
     return {"status": "ok"}
 
+@http_app.get("/test")
+async def test():
+    try:
+        async with aiosqlite.connect(DB_PATH) as db:
+            await db.execute("SELECT 1")
+        return {"status": "db ok"}
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 @http_app.get("/leaders")
 async def api_get_leaders():
     async with aiosqlite.connect(DB_PATH) as db:
@@ -249,3 +258,4 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
