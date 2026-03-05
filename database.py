@@ -2,7 +2,49 @@ import aiosqlite
 from datetime import datetime
 import json
 
-DB_PATH = "your_database.db"  # замени на свой путь
+DB_PATH = "user_history.db"  # замени на свой путь
+
+
+async def init_db():
+    """Создаёт таблицу users, если её нет."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                user_id INTEGER PRIMARY KEY,
+                username TEXT,
+                first_name TEXT,
+                referrer_id INTEGER,
+                created_at TEXT
+            )
+        ''')
+        await db.commit()
+
+
+async def get_user(user_id: int):
+    """Возвращает запись пользователя из таблицы users."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
+        row = await cursor.fetchone()
+        return dict(row) if row else None
+
+async def create_user(user_id: int, username: str = None, referrer_id: int = None):
+    """Создаёт нового пользователя в таблице users."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        now = datetime.now().isoformat()
+        await db.execute('''
+            INSERT OR IGNORE INTO users (user_id, username, referrer_id, created_at)
+            VALUES (?, ?, ?, ?)
+        ''', (user_id, username, referrer_id, now))
+        await db.commit()
+
+async def update_energy(user_id: int, new_energy: int):
+    """Обновляет энергию пользователя (если нужно, но в таблице users нет поля energy – возможно, это для другого бота)"""
+    # Здесь функция из старого бота, но в таблице users нет поля energy.
+    # Если она не нужна, можно удалить, но оставим заглушку.
+    pass
+
+
 
 async def init_game_db():
     async with aiosqlite.connect(DB_PATH) as db:
