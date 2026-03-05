@@ -1,9 +1,10 @@
 import aiosqlite
-from datetime import datetime
 import json
+from datetime import datetime
 
-DB_PATH = "user_history.db"  # замени на свой путь
+DB_PATH = "user_history.db"  # Путь к базе данных
 
+# ==================== СТАРЫЕ ФУНКЦИИ (для таблицы users) ====================
 
 async def init_db():
     """Создаёт таблицу users, если её нет."""
@@ -18,7 +19,6 @@ async def init_db():
             )
         ''')
         await db.commit()
-
 
 async def get_user(user_id: int):
     """Возвращает запись пользователя из таблицы users."""
@@ -39,14 +39,13 @@ async def create_user(user_id: int, username: str = None, referrer_id: int = Non
         await db.commit()
 
 async def update_energy(user_id: int, new_energy: int):
-    """Обновляет энергию пользователя (если нужно, но в таблице users нет поля energy – возможно, это для другого бота)"""
-    # Здесь функция из старого бота, но в таблице users нет поля energy.
-    # Если она не нужна, можно удалить, но оставим заглушку.
+    """Обновляет энергию пользователя (заглушка)."""
     pass
 
-
+# ==================== НОВЫЕ ФУНКЦИИ (для таблицы game_users) ====================
 
 async def init_game_db():
+    """Создаёт таблицу game_users, если её нет."""
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute('''
             CREATE TABLE IF NOT EXISTS game_users (
@@ -72,15 +71,20 @@ async def init_game_db():
         await db.commit()
 
 async def get_game_user(user_id: int):
+    """Возвращает данные игрока из таблицы game_users."""
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         cursor = await db.execute("SELECT * FROM game_users WHERE user_id = ?", (user_id,))
         row = await cursor.fetchone()
         if row:
-            return dict(row)
+            data = dict(row)
+            if data.get('unlocked_pets'):
+                data['unlocked_pets'] = json.loads(data['unlocked_pets'])
+            return data
         return None
 
-async def create_game_user(user_id: int, username: str, first_name: str):
+async def create_game_user(user_id: int, username: str = None, first_name: str = None):
+    """Создаёт нового игрока в таблице game_users."""
     async with aiosqlite.connect(DB_PATH) as db:
         now = datetime.now().isoformat()
         await db.execute('''
@@ -101,6 +105,9 @@ async def create_game_user(user_id: int, username: str, first_name: str):
         return await get_game_user(user_id)
 
 async def update_game_user(user_id: int, **kwargs):
+    """Обновляет указанные поля игрока в таблице game_users."""
+    if not kwargs:
+        return
     async with aiosqlite.connect(DB_PATH) as db:
         set_clause = ', '.join(f"{key} = ?" for key in kwargs)
         values = list(kwargs.values())

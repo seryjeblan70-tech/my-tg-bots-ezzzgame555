@@ -11,6 +11,7 @@ from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, W
 from aiogram.filters import Command
 from config import BOT_TOKEN, MINI_APP_URL, ADMIN_ID
 from database import init_game_db, get_game_user, create_game_user, update_game_user
+from database import init_db, create_user, get_user, update_energy
 
 logging.basicConfig(level=logging.INFO)
 
