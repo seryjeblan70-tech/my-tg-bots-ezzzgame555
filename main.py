@@ -235,10 +235,10 @@ async def api_get_leaders():
         return leaders
 
 def run_http():
-    uvicorn.run(http_app, host="0.0.0.0", port=8000, log_level="info")
+    uvicorn.run(http_app, host="0.0.0.0", port=80, log_level="info")
 
 threading.Thread(target=run_http, daemon=True).start()
-print("✅ HTTP-сервер запущен на порту 8000")
+print("✅ HTTP-сервер запущен на порту 8080")
 
 # ==================== ОСНОВНОЙ ЗАПУСК ====================
 async def main():
@@ -247,4 +247,5 @@ async def main():
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
+
     asyncio.run(main())
