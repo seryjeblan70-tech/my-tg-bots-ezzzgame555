@@ -10,7 +10,6 @@ from aiogram import Bot, Dispatcher, Router, F
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.filters import Command
 from config import BOT_TOKEN, MINI_APP_URL, ADMIN_ID
-from database import init_db, create_user, get_user, update_energy
 from database import init_game_db, get_game_user, create_game_user, update_game_user
 
 logging.basicConfig(level=logging.INFO)
@@ -27,13 +26,6 @@ async def cmd_start(message: Message):
     args = message.text.split()
     ref_code = args[1] if len(args) > 1 else None
     referrer_id = int(ref_code.split('_')[1]) if ref_code and ref_code.startswith('ref_') else None
-
-    await create_user(
-        user_id=message.from_user.id,
-        username=message.from_user.username,
-        referrer_id=referrer_id
-    )
-
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(
@@ -305,16 +297,6 @@ print("✅ HTTP-сервер запущен на порту 8000")
 
 
 async def main():
-    await init_db()
-    await init_game_db()
-    await dp.start_polling(bot)
-
-if __name__ == "__main__":
-    asyncio.run(main())
-
-
-async def main():
-    await init_db()
     await init_game_db()
     await dp.start_polling(bot)
 
